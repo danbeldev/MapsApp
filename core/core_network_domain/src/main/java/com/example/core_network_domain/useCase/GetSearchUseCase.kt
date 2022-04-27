@@ -1,19 +1,26 @@
 package com.example.core_network_domain.useCase
 
-import com.example.core_network_domain.entitier.infoMap.SearchResult
+import com.example.core_network_domain.common.Response
+import com.example.core_network_domain.entities.infoMap.SearchResult
 import com.example.core_network_domain.repository.InfoMapRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GetSearchUseCase @Inject constructor(
     private val infoMapRepository: InfoMapRepository
 ) {
-    suspend operator fun invoke(
+    operator fun invoke(
         city:String,
         county:String,
-        state:String,
         country:String,
         postalcode:String
-    ):List<SearchResult>{
-        return infoMapRepository.getSearch(city, county, state, country, postalcode)
+    ): Flow<Response<List<SearchResult>>> = flow {
+        try {
+            val response = infoMapRepository.getSearch(city, county, country, postalcode)
+            emit(Response.Success(data = response))
+        }catch (e:Exception){
+            emit(Response.Error<List<SearchResult>>(message = e.message.toString()))
+        }
     }
 }

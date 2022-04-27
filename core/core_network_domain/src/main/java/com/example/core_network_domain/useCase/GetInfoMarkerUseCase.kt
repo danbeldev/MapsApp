@@ -1,6 +1,6 @@
 package com.example.core_network_domain.useCase
 
-import com.example.core_network_domain.entitier.infoMap.InfoMarker
+import com.example.core_network_domain.entities.infoMap.InfoMarker
 import com.example.core_network_domain.repository.InfoMapRepository
 import javax.inject.Inject
 

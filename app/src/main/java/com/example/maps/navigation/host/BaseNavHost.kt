@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.example.core_utils.navigation.START_ROUTE
+import com.example.maps.di.AppComponent
 import com.example.maps.navigation.navGraph.mapNavGraph
 import com.example.maps.navigation.navGraph.startNavGraph
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -13,7 +14,8 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 @ExperimentalPermissionsApi
 @Composable
 fun BaseNavHost(
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    appComponent:AppComponent
 ) {
     NavHost(
         navController = navHostController,
@@ -24,7 +26,8 @@ fun BaseNavHost(
                 navController = navHostController
             )
             mapNavGraph(
-                navController = navHostController
+                navController = navHostController,
+                appComponent = appComponent
             )
         }
     )

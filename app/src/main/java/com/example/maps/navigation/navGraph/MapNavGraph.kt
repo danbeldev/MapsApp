@@ -8,12 +8,14 @@ import androidx.navigation.navigation
 import com.example.core_utils.navigation.MAP_ROUE
 import com.example.core_utils.navigation.MapNavScreen
 import com.example.feature_map.MapScreen
+import com.example.maps.di.AppComponent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
 @ExperimentalPermissionsApi
 @ExperimentalMaterialApi
 fun NavGraphBuilder.mapNavGraph(
-    navController: NavController
+    navController: NavController,
+    appComponent: AppComponent
 ) {
     navigation(
         startDestination = MapNavScreen.Map.route,
@@ -21,7 +23,8 @@ fun NavGraphBuilder.mapNavGraph(
         builder = {
             composable(MapNavScreen.Map.route){
                 MapScreen(
-                    navController = navController
+                    navController = navController,
+                    mapViewModel = appComponent.mapViewModel()
                 )
             }
         }

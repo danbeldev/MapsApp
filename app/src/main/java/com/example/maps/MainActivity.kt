@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.compose.rememberNavController
+import com.example.maps.di.DaggerAppComponent
 import com.example.maps.navigation.host.BaseNavHost
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
@@ -13,10 +14,14 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val appComponent = DaggerAppComponent.create()
+
         setContent {
             val navHostController = rememberNavController()
             BaseNavHost(
-                navHostController = navHostController
+                navHostController = navHostController,
+                appComponent = appComponent
             )
         }
     }

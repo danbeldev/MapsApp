@@ -1,8 +1,8 @@
 package com.example.core_network_data.repositoryImpl
 
 import com.example.core_network_data.api.InfoMapApi
-import com.example.core_network_domain.entitier.infoMap.InfoMarker
-import com.example.core_network_domain.entitier.infoMap.SearchResult
+import com.example.core_network_domain.entities.infoMap.InfoMarker
+import com.example.core_network_domain.entities.infoMap.SearchResult
 import com.example.core_network_domain.repository.InfoMapRepository
 import javax.inject.Inject
 
@@ -12,14 +12,12 @@ class InfoMapRepositoryImpl @Inject constructor (
     override suspend fun getSearch(
         city: String,
         county: String,
-        state: String,
         country: String,
         postalcode: String
     ): List<SearchResult> {
         val response = infoMapApi.getSearch(
             city = city,
             country = country,
-            state = state,
             county = county,
             postalcode = postalcode
         )
@@ -27,7 +25,7 @@ class InfoMapRepositoryImpl @Inject constructor (
     }
 
     override suspend fun getInfoMarker(osmIds: String): List<InfoMarker> {
-        val response = infoMapApi.getInfoMarker(osmIds = osmIds)
+        val response = infoMapApi.getInfoMarker(osmIds = "R$osmIds")
         return response.body() ?: emptyList()
     }
 

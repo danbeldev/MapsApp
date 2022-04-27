@@ -3,8 +3,8 @@ package com.example.core_network_data.api
 import com.example.core_network_data.common.ConstantsUrl.INFO_MARKER_URL
 import com.example.core_network_data.common.ConstantsUrl.REVERSE_URL
 import com.example.core_network_data.common.ConstantsUrl.SEARCH_URL
-import com.example.core_network_domain.entitier.infoMap.InfoMarker
-import com.example.core_network_domain.entitier.infoMap.SearchResult
+import com.example.core_network_domain.entities.infoMap.InfoMarker
+import com.example.core_network_domain.entities.infoMap.SearchResult
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -16,7 +16,6 @@ interface InfoMapApi {
         @Query("format") format:String = "json",
         @Query("city") city:String,
         @Query("county") county:String,
-        @Query("state") state:String,
         @Query("country") country:String,
         @Query("postalcode") postalcode:String
     ):Response<List<SearchResult>>

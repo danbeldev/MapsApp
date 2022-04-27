@@ -1,6 +1,6 @@
 package com.example.core_network_domain.useCase
 
-import com.example.core_network_domain.entitier.infoMap.SearchResult
+import com.example.core_network_domain.entities.infoMap.SearchResult
 import com.example.core_network_domain.repository.InfoMapRepository
 import javax.inject.Inject
 

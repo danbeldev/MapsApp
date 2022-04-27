@@ -1,4 +1,4 @@
-package com.example.core_network_domain.entitier.infoMap
+package com.example.core_network_domain.entities.infoMap
 
 data class SearchResult(
     val lat:String = "",

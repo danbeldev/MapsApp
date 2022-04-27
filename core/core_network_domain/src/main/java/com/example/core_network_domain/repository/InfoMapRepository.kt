@@ -1,14 +1,13 @@
 package com.example.core_network_domain.repository
 
-import com.example.core_network_domain.entitier.infoMap.InfoMarker
-import com.example.core_network_domain.entitier.infoMap.SearchResult
+import com.example.core_network_domain.entities.infoMap.InfoMarker
+import com.example.core_network_domain.entities.infoMap.SearchResult
 
 interface InfoMapRepository {
 
     suspend fun getSearch(
         city:String,
         county:String,
-        state:String,
         country:String,
         postalcode:String
     ):List<SearchResult>
