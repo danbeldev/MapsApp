@@ -1,0 +1,21 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "Maps"
+include ':app'
+include ':feature:feature_map'
+include ':feature:feature_intro_start'
+include ':core:core-utils'
+include ':core:core_network_domain'
+include ':core:core_network_data'
