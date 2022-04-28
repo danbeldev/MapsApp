@@ -15,7 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -27,7 +29,9 @@ import com.airbnb.lottie.compose.*
 import com.example.core_network_domain.common.Response
 import com.example.core_network_domain.entities.infoMap.InfoMarker
 import com.example.core_network_domain.entities.infoMap.SearchResult
+import com.example.core_utils.navigation.WeatherNavScreen
 import com.example.core_utils.style_map.retro
+import com.example.feature_map.common.getGPS
 import com.example.feature_map.viewModel.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
@@ -36,6 +40,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -49,6 +54,7 @@ fun MapScreen(
     navController: NavController,
     mapViewModel: MapViewModel
 ) {
+    val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val lifecycleScope = LocalLifecycleOwner.current.lifecycleScope
     var search by remember { mutableStateOf("") }
@@ -79,6 +85,10 @@ fun MapScreen(
         iterations = LottieConstants.IterateForever
     )
 
+    val cameraPosition = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(getGPS(context = context), 17f)
+    }
+
     lifecycleScope.launch {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
             mapViewModel.responseSearch.onEach {
@@ -102,22 +112,48 @@ fun MapScreen(
         }
     })
 
+    LaunchedEffect(key1 = searchLatLng, block = {
+        searchLatLng?.let {
+            cameraPosition.position = CameraPosition.fromLatLngZoom(it, 17f)
+        }
+    })
+
     BackdropScaffold(
         scaffoldState = backdropState,
         peekHeight = 300.dp,
         backLayerBackgroundColor = Color.Gray,
         appBar = {},
         backLayerContent = {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = rememberCameraPositionState {
-                    position = CameraPosition.fromLatLngZoom(searchLatLng ?: LatLng(0.1,0.1),5f)
-                },
-                properties = MapProperties(
-                    isMyLocationEnabled = permission.hasPermission,
-                    mapStyleOptions = MapStyleOptions(retro)
+            Box(modifier = Modifier.fillMaxSize()){
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPosition,
+                    properties = MapProperties(
+                        isMyLocationEnabled = permission.hasPermission,
+                        mapStyleOptions = MapStyleOptions(retro)
+                    ),
+                    content = {
+                        searchLatLng?.let {
+                            Marker(
+                                position = it
+                            )
+                        }
+                    }
                 )
-            )
+                IconButton(
+                    modifier = Modifier.padding(10.dp),
+                    onClick = {
+                        navController.navigate(WeatherNavScreen.WeatherInfo.route)
+                    }
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.weather),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
+
         },
         frontLayerContent = {
             Column(
@@ -186,7 +222,7 @@ fun MapScreen(
                                             detectTapGestures(onTap = {
                                                 searchLatLng = LatLng(
                                                     item.lat.toDouble(),
-                                                    item.lot.toDouble()
+                                                    item.lon.toDouble()
                                                 )
                                             })
                                         }

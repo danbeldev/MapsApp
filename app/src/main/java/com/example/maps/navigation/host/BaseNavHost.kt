@@ -8,6 +8,7 @@ import com.example.core_utils.navigation.START_ROUTE
 import com.example.maps.di.AppComponent
 import com.example.maps.navigation.navGraph.mapNavGraph
 import com.example.maps.navigation.navGraph.startNavGraph
+import com.example.maps.navigation.navGraph.weatherNavGraph
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
 @ExperimentalMaterialApi
@@ -26,6 +27,11 @@ fun BaseNavHost(
                 navController = navHostController
             )
             mapNavGraph(
+                navController = navHostController,
+                appComponent = appComponent
+            )
+
+            weatherNavGraph(
                 navController = navHostController,
                 appComponent = appComponent
             )

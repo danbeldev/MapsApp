@@ -1,11 +1,14 @@
 package com.example.maps.di
 
 import com.example.feature_map.viewModel.MapViewModel
+import com.example.feature_weather.viewModel.WeatherViewModel
 import dagger.Component
 import javax.inject.Singleton
 
-@[Singleton Component(modules = [ApiModule::class])]
+@[Singleton Component(modules = [ApiInfoMapModule::class, ApiWeatherModule::class])]
 interface AppComponent{
 
     fun mapViewModel():MapViewModel
+
+    fun weatherViewModel():WeatherViewModel
 }

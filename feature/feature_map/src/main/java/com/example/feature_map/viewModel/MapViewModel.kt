@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.core_network_domain.common.Response
 import com.example.core_network_domain.entities.infoMap.InfoMarker
 import com.example.core_network_domain.entities.infoMap.SearchResult
-import com.example.core_network_domain.useCase.GetInfoMarkerUseCase
-import com.example.core_network_domain.useCase.GetReverseUseCase
-import com.example.core_network_domain.useCase.GetSearchUseCase
+import com.example.core_network_domain.useCase.infoMap.GetInfoMarkerUseCase
+import com.example.core_network_domain.useCase.infoMap.GetReverseUseCase
+import com.example.core_network_domain.useCase.infoMap.GetSearchUseCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject

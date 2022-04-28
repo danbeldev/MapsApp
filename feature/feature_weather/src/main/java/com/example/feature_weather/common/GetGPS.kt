@@ -1,17 +1,16 @@
-package com.example.feature_map.common
+package com.example.feature_weather.common
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.LOCATION_SERVICE
 import android.location.Location
 import android.location.LocationManager
-import com.google.android.gms.maps.model.LatLng
 
 
 @SuppressLint("MissingPermission")
 internal fun getGPS(
     context: Context
-): LatLng {
+): DoubleArray {
     val lm = context.getSystemService(LOCATION_SERVICE) as LocationManager
     val providers = lm.getProviders(true)
     var l: Location? = null
@@ -19,8 +18,10 @@ internal fun getGPS(
         l = lm.getLastKnownLocation(providers[i])
         if (l != null) break
     }
-    l?.let {
-        return LatLng(l.latitude, l.longitude)
+    val gps = DoubleArray(2)
+    if (l != null) {
+        gps[0] = l.latitude
+        gps[1] = l.longitude
     }
-    return LatLng(0.1,0.1)
+    return gps
 }

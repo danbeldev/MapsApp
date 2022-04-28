@@ -1,4 +1,4 @@
-package com.example.core_network_domain.useCase
+package com.example.core_network_domain.useCase.infoMap
 
 import com.example.core_network_domain.common.Response
 import com.example.core_network_domain.entities.infoMap.SearchResult
