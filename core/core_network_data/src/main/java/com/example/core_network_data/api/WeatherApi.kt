@@ -20,12 +20,13 @@ interface WeatherApi {
     ):Response<WeatherResult>
 
     @GET(WEATHER_ALERTS)
-    suspend fun getWeatherAlerts(
+    suspend fun getWeather(
         @Query("appid") key:String = "dda74531998c575c691e75f1cd4e6561",
         @Query("lat") lat:String,
         @Query("lon") lon:String,
         @Query("units") units:String = "metric",
         @Query("lang") lang:String = "ru",
-        @Query("exclude") exclude:String = "alerts"
+        @Query("exclude") exclude:String
     ):Response<WeatherAlert>
+
 }

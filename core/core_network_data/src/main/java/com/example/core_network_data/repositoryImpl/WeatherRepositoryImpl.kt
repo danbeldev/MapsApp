@@ -14,6 +14,10 @@ class WeatherRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getWeatherAlerts(lat: String, lon: String): WeatherAlert? {
-        return weatherApi.getWeatherAlerts(lat = lat, lon = lon).body()
+        return weatherApi.getWeather(lat = lat, lon = lon, exclude = "alerts").body()
+    }
+
+    override suspend fun getWeatherDailyHourly(lat: String, lon: String): WeatherAlert? {
+        return weatherApi.getWeather(lat = lat, lon = lon, exclude = "hourly,daily").body()
     }
 }

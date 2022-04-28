@@ -9,6 +9,7 @@ import com.example.core_network_domain.entities.weather.WeatherAlert
 import com.example.core_network_domain.entities.weather.WeatherResult
 import com.example.core_network_domain.useCase.infoMap.GetReverseUseCase
 import com.example.core_network_domain.useCase.weather.GetWeatherAlertsUseCase
+import com.example.core_network_domain.useCase.weather.GetWeatherDailyHourlyUseCase
 import com.example.core_network_domain.useCase.weather.GetWeatherUseCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -17,7 +18,8 @@ import javax.inject.Inject
 class WeatherViewModel @Inject constructor(
     private val getWeather: GetWeatherUseCase,
     private val getReverseUseCase: GetReverseUseCase,
-    private val getWeatherAlertsUseCase: GetWeatherAlertsUseCase
+    private val getWeatherAlertsUseCase: GetWeatherAlertsUseCase,
+    private val getWeatherDailyHourlyUseCase: GetWeatherDailyHourlyUseCase
 ):ViewModel() {
 
     private val _responseWeather:MutableStateFlow<Response<WeatherResult>> = MutableStateFlow(Response.Loading())
@@ -28,6 +30,9 @@ class WeatherViewModel @Inject constructor(
 
     private val _responseWeatherAlerts:MutableStateFlow<WeatherAlert?> = MutableStateFlow(null)
     val responseWeatherAlerts = _responseWeatherAlerts.asStateFlow().filterNotNull()
+
+    private val _responseWeatherDailyHourly:MutableStateFlow<WeatherAlert?> = MutableStateFlow(null)
+    val responseWeatherDailyHourly = _responseWeatherDailyHourly.asStateFlow().filterNotNull()
 
     fun getWeather(lat:Double, lon:Double){
         getWeather.invoke(lat,lon).onEach {
@@ -58,6 +63,15 @@ class WeatherViewModel @Inject constructor(
     ){
         getWeatherAlertsUseCase.invoke(lat, lon).onEach {
             _responseWeatherAlerts.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun getWeatherDailyHourly(
+        lat:Double,
+        lon:Double
+    ){
+        getWeatherDailyHourlyUseCase.invoke(lat, lon).onEach {
+            _responseWeatherDailyHourly.value = it
         }.launchIn(viewModelScope)
     }
 }

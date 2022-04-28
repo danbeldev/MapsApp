@@ -1,5 +1,6 @@
 package com.example.maps.navigation.navGraph
 
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -10,6 +11,7 @@ import com.example.feature_weather.WeatherScreen
 import com.example.maps.di.AppComponent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
+@ExperimentalMaterialApi
 @ExperimentalPermissionsApi
 fun NavGraphBuilder.weatherNavGraph(
     navController: NavController,

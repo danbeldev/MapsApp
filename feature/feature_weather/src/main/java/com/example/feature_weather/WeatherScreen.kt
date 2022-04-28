@@ -2,19 +2,18 @@ package com.example.feature_weather
 
 import android.Manifest
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Divider
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -39,6 +38,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
+@ExperimentalMaterialApi
 @SuppressLint("CoroutineCreationDuringComposition")
 @ExperimentalPermissionsApi
 @Composable
@@ -70,10 +70,11 @@ fun WeatherScreen(
     })
 
     if (permission.hasPermission){
-
+        val backdropState = rememberBackdropScaffoldState(initialValue = BackdropValue.Concealed)
         var weather:Response<WeatherResult> by remember { mutableStateOf(Response.Loading()) }
         var reverse by remember { mutableStateOf(SearchResult()) }
         var weatherAlerts by remember { mutableStateOf(WeatherAlert()) }
+        var weatherDailyHourly by remember { mutableStateOf(WeatherAlert()) }
 
         weatherViewModel.getWeather(
             lat = getGPS(context)[0],
@@ -86,6 +87,11 @@ fun WeatherScreen(
         )
 
         weatherViewModel.getWeatherAlerts(
+            lat = getGPS(context)[0],
+            lon = getGPS(context)[1]
+        )
+
+        weatherViewModel.getWeatherDailyHourly(
             lat = getGPS(context)[0],
             lon = getGPS(context)[1]
         )
@@ -114,6 +120,14 @@ fun WeatherScreen(
             }
         }
 
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+                weatherViewModel.responseWeatherDailyHourly.onEach {
+                    weatherDailyHourly = it
+                }.collect()
+            }
+        }
+
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = Color.White
@@ -135,67 +149,166 @@ fun WeatherScreen(
                 }
                 is Response.Success -> {
                     val item = weather.data!!
-                    LazyColumn(content = {
-                        item {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
+
+                    BackdropScaffold(
+                        scaffoldState = backdropState,
+                        appBar = { /*TODO*/ },
+                        peekHeight = 400.dp,
+                        headerHeight = 0.dp,
+                        gesturesEnabled = false,
+                        backLayerBackgroundColor = Color.Transparent,
+                        backLayerContent = {
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        Brush.linearGradient(
+                                            listOf(
+                                                Color(0xFF47BFDF),
+                                                Color(0xFF4A91FF)
+                                            )
+                                        )
+                                    )
                             ) {
-                                Spacer(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(30.dp)
-                                )
+                                LazyColumn(content = {
+                                    item {
+                                        Column(
+                                            modifier = Modifier.fillMaxSize(),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Spacer(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(200.dp)
+                                            )
 
-                                Text(
-                                    text = reverse.display_name,
-                                    modifier = Modifier.padding(5.dp)
-                                )
+                                            Text(
+                                                text = "${item.main.temp} °",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 64.sp,
+                                                modifier = Modifier.padding(5.dp),
+                                                color = Color.White
+                                            )
 
-                                Card(
-                                    modifier = Modifier.fillMaxSize(),
-                                    shape = AbsoluteRoundedCornerShape(10.dp),
-                                    backgroundColor = Color.White,
-                                    elevation = 15.dp
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Column {
-                                            Text(text = "TEMPERATURE")
+                                            LazyRow(content = {
+                                                items(item.weather){ weather ->
+                                                    Text(
+                                                        text = weather.description,
+                                                        modifier = Modifier.padding(5.dp),
+                                                        color = Color.White,
+                                                        fontSize = 20.sp
+                                                    )
+                                                }
+                                            })
+
+                                            Spacer(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(100.dp)
+                                            )
                                         }
                                     }
-                                }
+                                })
+                            }
+                        },
+                        frontLayerContent = {
 
+                            Column {
                                 Text(
-                                    text = "${item.main.temp} C",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 22.sp,
-                                    modifier = Modifier.padding(5.dp)
+                                    text = "Today",
+                                    modifier = Modifier.padding(
+                                        top = 20.dp,
+                                        start = 20.dp,
+                                        bottom = 10.dp
+                                    ),
+                                    color = Color(0xFF6B6969),
+                                    fontSize = 24.sp
                                 )
 
                                 LazyRow(content = {
-                                    items(item.weather){ weather ->
-                                        Text(
-                                            text = weather.description,
-                                            modifier = Modifier.padding(5.dp)
-                                        )
+                                    items(weatherDailyHourly.hourly){ item ->
+
+                                        Card(
+                                            shape = AbsoluteRoundedCornerShape(10.dp),
+                                            modifier = Modifier
+                                                .padding(5.dp),
+                                            elevation = 10.dp
+                                        ) {
+                                            Column {
+
+                                                Text(
+                                                    text = "${item.temp} °",
+                                                    modifier = Modifier.padding(5.dp),
+                                                    fontSize = 12.sp
+                                                )
+
+                                                Text(
+                                                    text = item.weather[0].description,
+                                                    modifier = Modifier
+                                                        .padding(5.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                })
+
+
+                                Text(
+                                    text = "Next 8 Days",
+                                    modifier = Modifier.padding(
+                                        top = 20.dp,
+                                        start = 20.dp,
+                                        bottom = 10.dp
+                                    ),
+                                    color = Color(0xFF6B6969),
+                                    fontSize = 24.sp
+                                )
+
+                                LazyRow(content = {
+                                    itemsIndexed(weatherAlerts.daily){ index, item ->
+
+                                        Card(
+                                            shape = AbsoluteRoundedCornerShape(10.dp),
+                                            modifier = Modifier
+                                                .padding(5.dp),
+                                            elevation = 10.dp
+                                        ) {
+                                            Column {
+
+                                                Text(
+                                                    text = "${item.temp.day} °",
+                                                    modifier = Modifier.padding(5.dp),
+                                                    fontSize = 12.sp
+                                                )
+
+                                                Text(
+                                                    text = when(index){
+                                                        0 -> "Monday"
+                                                        1 -> "Tuesday"
+                                                        2 -> "Wednesday"
+                                                        3 -> "Thursday"
+                                                        4 -> "Friday"
+                                                        5 -> "Saturday"
+                                                        6 -> "Sunday"
+                                                        else -> "Monday"
+                                                    },
+                                                    modifier = Modifier
+                                                        .padding(5.dp)
+                                                        .width(100.dp)
+                                                )
+
+                                                Text(
+                                                    text = item.weather[0].description,
+                                                    modifier = Modifier
+                                                        .padding(5.dp)
+                                                )
+                                            }
+                                        }
                                     }
                                 })
                             }
                         }
-
-                        itemsIndexed(weatherAlerts.daily){ index, item ->
-                            Column {
-                                
-                                Text(text = item.weather.toString())
-                                
-                                Divider()
-                            }
-                        }
-                    })
+                    )
                 }
             }
         }

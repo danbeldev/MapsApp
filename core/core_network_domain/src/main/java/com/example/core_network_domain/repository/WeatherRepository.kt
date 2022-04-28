@@ -14,4 +14,9 @@ interface WeatherRepository{
         lat:String,
         lon:String
     ):WeatherAlert?
+
+    suspend fun getWeatherDailyHourly(
+        lat:String,
+        lon:String
+    ):WeatherAlert?
 }
