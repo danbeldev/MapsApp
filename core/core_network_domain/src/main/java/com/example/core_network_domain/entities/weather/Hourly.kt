@@ -1,7 +1,14 @@
 package com.example.core_network_domain.entities.weather
 
+import com.example.core_network_domain.serialization.DateTimeSerialization
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+
+@ExperimentalSerializationApi
+@Serializable
 data class Hourly(
-    val dt:Int,
+    @Serializable(with = DateTimeSerialization::class)
+    val dt:String,
     val temp:Float,
     val feels_like:Float,
     val pressure:Int,
@@ -14,5 +21,5 @@ data class Hourly(
     val wind_deg:Int,
     val wind_gust:Float,
     val weather: List<Weather>,
-    val pop:Int
+    val pop:Float
 )

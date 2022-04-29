@@ -4,10 +4,12 @@ import com.example.core_network_data.common.ConstantsUrl.WEATHER_ALERTS
 import com.example.core_network_data.common.ConstantsUrl.WEATHER_URL
 import com.example.core_network_domain.entities.weather.WeatherAlert
 import com.example.core_network_domain.entities.weather.WeatherResult
+import kotlinx.serialization.ExperimentalSerializationApi
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
+@ExperimentalSerializationApi
 interface WeatherApi {
 
     @GET(WEATHER_URL)

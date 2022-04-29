@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -26,7 +25,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
 import com.example.core_network_domain.common.Response
-import com.example.core_network_domain.entities.infoMap.SearchResult
 import com.example.core_network_domain.entities.weather.WeatherAlert
 import com.example.core_network_domain.entities.weather.WeatherResult
 import com.example.core_utils.navigation.MapNavScreen
@@ -37,14 +35,18 @@ import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 @ExperimentalMaterialApi
 @SuppressLint("CoroutineCreationDuringComposition")
 @ExperimentalPermissionsApi
 @Composable
 fun WeatherScreen(
     navController: NavController,
-    weatherViewModel: WeatherViewModel
+    weatherViewModel: WeatherViewModel,
+    lat:Double?,
+    lon:Double?
 ) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -66,48 +68,62 @@ fun WeatherScreen(
     )
 
     LaunchedEffect(key1 = Unit, block = {
-        permission.launchPermissionRequest()
+        if (lat == null && lon == null)
+            permission.launchPermissionRequest()
     })
 
-    if (permission.hasPermission){
+    if (permission.hasPermission || lat != null){
         val backdropState = rememberBackdropScaffoldState(initialValue = BackdropValue.Concealed)
         var weather:Response<WeatherResult> by remember { mutableStateOf(Response.Loading()) }
-        var reverse by remember { mutableStateOf(SearchResult()) }
         var weatherAlerts by remember { mutableStateOf(WeatherAlert()) }
         var weatherDailyHourly by remember { mutableStateOf(WeatherAlert()) }
 
-        weatherViewModel.getWeather(
-            lat = getGPS(context)[0],
-            lon = getGPS(context)[1]
-        )
+        if (lat != null && lon !=null){
+            weatherViewModel.getWeather(
+                lat = lat,
+                lon = lon
+            )
 
-        weatherViewModel.getReverse(
-            lat = getGPS(context)[0].toString(),
-            lon = getGPS(context)[1].toString()
-        )
+            weatherViewModel.getReverse(
+                lat = lat.toString(),
+                lon = lon.toString()
+            )
 
-        weatherViewModel.getWeatherAlerts(
-            lat = getGPS(context)[0],
-            lon = getGPS(context)[1]
-        )
+            weatherViewModel.getWeatherAlerts(
+                lat = lat,
+                lon = lon
+            )
 
-        weatherViewModel.getWeatherDailyHourly(
-            lat = getGPS(context)[0],
-            lon = getGPS(context)[1]
-        )
+            weatherViewModel.getWeatherDailyHourly(
+                lat = lat,
+                lon = lon
+            )
+        }else{
+            weatherViewModel.getWeather(
+                lat = getGPS(context)[0],
+                lon = getGPS(context)[1]
+            )
+
+            weatherViewModel.getReverse(
+                lat = getGPS(context)[0].toString(),
+                lon = getGPS(context)[1].toString()
+            )
+
+            weatherViewModel.getWeatherAlerts(
+                lat = getGPS(context)[0],
+                lon = getGPS(context)[1]
+            )
+
+            weatherViewModel.getWeatherDailyHourly(
+                lat = getGPS(context)[0],
+                lon = getGPS(context)[1]
+            )
+        }
 
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
                 weatherViewModel.responseWeather.onEach {
                     weather = it
-                }.collect()
-            }
-        }
-
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
-                weatherViewModel.responseReverse.onEach {
-                    reverse = it
                 }.collect()
             }
         }
@@ -153,7 +169,7 @@ fun WeatherScreen(
                     BackdropScaffold(
                         scaffoldState = backdropState,
                         appBar = { /*TODO*/ },
-                        peekHeight = 400.dp,
+                        peekHeight = 350.dp,
                         headerHeight = 0.dp,
                         gesturesEnabled = false,
                         backLayerBackgroundColor = Color.Transparent,
@@ -179,7 +195,7 @@ fun WeatherScreen(
                                             Spacer(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .height(200.dp)
+                                                    .height(150.dp)
                                             )
 
                                             Text(
@@ -200,11 +216,25 @@ fun WeatherScreen(
                                                     )
                                                 }
                                             })
+                                            
+                                            Row{
+                                                Text(
+                                                    text = "Восход солнца ${item.sys?.sunrise}",
+                                                    modifier = Modifier.padding(5.dp),
+                                                    color = Color.White
+                                                )
+
+                                                Text(
+                                                    text = "Заход солнца ${item.sys?.sunset}",
+                                                    modifier = Modifier.padding(5.dp),
+                                                    color = Color.White
+                                                )
+                                            }
 
                                             Spacer(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .height(100.dp)
+                                                    .height(90.dp)
                                             )
                                         }
                                     }
@@ -247,6 +277,12 @@ fun WeatherScreen(
                                                     modifier = Modifier
                                                         .padding(5.dp)
                                                 )
+
+                                                Text(
+                                                    text = item.dt,
+                                                    modifier = Modifier.padding(5.dp),
+                                                    fontSize = 12.sp
+                                                )
                                             }
                                         }
                                     }
@@ -254,7 +290,7 @@ fun WeatherScreen(
 
 
                                 Text(
-                                    text = "Next 8 Days",
+                                    text = "Next 7 Days",
                                     modifier = Modifier.padding(
                                         top = 20.dp,
                                         start = 20.dp,
@@ -265,7 +301,7 @@ fun WeatherScreen(
                                 )
 
                                 LazyRow(content = {
-                                    itemsIndexed(weatherAlerts.daily){ index, item ->
+                                    items(weatherAlerts.daily){ item ->
 
                                         Card(
                                             shape = AbsoluteRoundedCornerShape(10.dp),
@@ -276,31 +312,22 @@ fun WeatherScreen(
                                             Column {
 
                                                 Text(
-                                                    text = "${item.temp.day} °",
+                                                    text = "${item.temp.min} °/ ${item.temp.max} °",
                                                     modifier = Modifier.padding(5.dp),
                                                     fontSize = 12.sp
-                                                )
-
-                                                Text(
-                                                    text = when(index){
-                                                        0 -> "Monday"
-                                                        1 -> "Tuesday"
-                                                        2 -> "Wednesday"
-                                                        3 -> "Thursday"
-                                                        4 -> "Friday"
-                                                        5 -> "Saturday"
-                                                        6 -> "Sunday"
-                                                        else -> "Monday"
-                                                    },
-                                                    modifier = Modifier
-                                                        .padding(5.dp)
-                                                        .width(100.dp)
                                                 )
 
                                                 Text(
                                                     text = item.weather[0].description,
                                                     modifier = Modifier
                                                         .padding(5.dp)
+                                                )
+
+                                                Text(
+                                                    text = item.dt,
+                                                    modifier = Modifier
+                                                        .padding(5.dp)
+                                                        .width(100.dp)
                                                 )
                                             }
                                         }

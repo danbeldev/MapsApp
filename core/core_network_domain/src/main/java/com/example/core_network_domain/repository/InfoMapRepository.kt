@@ -9,7 +9,8 @@ interface InfoMapRepository {
         city:String,
         county:String,
         country:String,
-        postalcode:String
+        postalcode:String,
+        street:String
     ):List<SearchResult>
 
     suspend fun getInfoMarker(

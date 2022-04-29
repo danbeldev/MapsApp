@@ -14,10 +14,11 @@ class GetSearchUseCase @Inject constructor(
         city:String,
         county:String,
         country:String,
-        postalcode:String
+        postalcode:String,
+        street:String
     ): Flow<Response<List<SearchResult>>> = flow {
         try {
-            val response = infoMapRepository.getSearch(city, county, country, postalcode)
+            val response = infoMapRepository.getSearch(city, county, country, postalcode,street)
             emit(Response.Success(data = response))
         }catch (e:Exception){
             emit(Response.Error<List<SearchResult>>(message = e.message.toString()))

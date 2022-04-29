@@ -13,13 +13,15 @@ class InfoMapRepositoryImpl @Inject constructor (
         city: String,
         county: String,
         country: String,
-        postalcode: String
+        postalcode: String,
+        street:String
     ): List<SearchResult> {
         val response = infoMapApi.getSearch(
             city = city,
             country = country,
             county = county,
-            postalcode = postalcode
+            postalcode = postalcode,
+            street = street
         )
         return response.body() ?: emptyList()
     }

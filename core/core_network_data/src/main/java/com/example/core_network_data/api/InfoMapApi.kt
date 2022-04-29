@@ -17,7 +17,8 @@ interface InfoMapApi {
         @Query("city") city:String,
         @Query("county") county:String,
         @Query("country") country:String,
-        @Query("postalcode") postalcode:String
+        @Query("postalcode") postalcode:String,
+        @Query("street") street:String
     ):Response<List<SearchResult>>
 
     @GET(INFO_MARKER_URL)

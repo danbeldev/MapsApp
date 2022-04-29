@@ -13,8 +13,10 @@ import com.example.core_network_domain.useCase.weather.GetWeatherDailyHourlyUseC
 import com.example.core_network_domain.useCase.weather.GetWeatherUseCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import javax.inject.Inject
 
+@ExperimentalSerializationApi
 class WeatherViewModel @Inject constructor(
     private val getWeather: GetWeatherUseCase,
     private val getReverseUseCase: GetReverseUseCase,

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Context.LOCATION_SERVICE
 import android.location.Location
 import android.location.LocationManager
+import android.util.Log
 
 
 @SuppressLint("MissingPermission")
@@ -23,5 +24,7 @@ internal fun getGPS(
         gps[0] = l.latitude
         gps[1] = l.longitude
     }
+    Log.e("latitude", gps[0].toString())
+    Log.e("longitude", gps[1].toString())
     return gps
 }
