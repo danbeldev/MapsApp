@@ -20,6 +20,18 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBI7Q92hZqhLszNAc2i3OkwsjmHjUQx6wY"/>
 
+        <receiver
+            android:name=".widgets.weather.WeatherWidgetReceiver"
+            android:enabled="@bool/glance_appwidget_available"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/water_widget_info" />
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

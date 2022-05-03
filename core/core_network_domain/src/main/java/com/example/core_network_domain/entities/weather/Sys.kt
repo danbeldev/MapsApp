@@ -8,10 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Sys(
     val country: String,
-    val id: Int?,
     @Serializable(with = DateTimeSerialization::class)
     val sunrise: String,
     @Serializable(with = DateTimeSerialization::class)
-    val sunset: String,
-    val type: Int?
+    val sunset: String
 )

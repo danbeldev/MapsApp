@@ -1,18 +1,15 @@
-package com.example.feature_weather.common
+package com.example.maps.widgets.weather.common
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Context.LOCATION_SERVICE
 import android.location.Location
 import android.location.LocationManager
-import android.util.Log
-
 
 @SuppressLint("MissingPermission")
 internal fun getGPS(
     context: Context
 ): DoubleArray {
-    val lm = context.getSystemService(LOCATION_SERVICE) as LocationManager
+    val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     val providers = lm.getProviders(true)
     var l: Location? = null
     for (i in providers.indices.reversed()) {
