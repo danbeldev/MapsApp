@@ -3,6 +3,10 @@ package com.example.feature_map.viewModel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core_database_domain.model.History
+import com.example.core_database_domain.useCase.history.AddHistoryUseCase
+import com.example.core_database_domain.useCase.history.DeleteHistoryBayIdUseCase
+import com.example.core_database_domain.useCase.history.GetHistoryUseCase
 import com.example.core_network_domain.common.Response
 import com.example.core_network_domain.entities.infoMap.InfoMarker
 import com.example.core_network_domain.entities.infoMap.SearchResult
@@ -19,7 +23,10 @@ class MapViewModel @Inject constructor(
     private val getSearchUseCase: GetSearchUseCase,
     private val getReverseUseCase: GetReverseUseCase,
     private val gerInfoMarkerUseCase: GetInfoMarkerUseCase,
-    private val getRouteUseCase: GetRouteUseCase
+    private val getRouteUseCase: GetRouteUseCase,
+    private val addHistoryUseCase: AddHistoryUseCase,
+    private val getHistoryUseCase: GetHistoryUseCase,
+    private val deleteHistoryBayIdUseCase: DeleteHistoryBayIdUseCase
 ):ViewModel() {
 
     private val _responseSearch:MutableStateFlow<Response<List<SearchResult>>> =
@@ -31,6 +38,10 @@ class MapViewModel @Inject constructor(
 
     private val _responseRoute:MutableStateFlow<Route?> = MutableStateFlow(null)
     val responseRoute = _responseRoute.asStateFlow().filterNotNull()
+
+    private val _responseHistory:MutableStateFlow<List<History>> =
+        MutableStateFlow(listOf())
+    val responseHistory = _responseHistory.asStateFlow()
 
     fun getSearch(
         city:String,
@@ -79,6 +90,24 @@ class MapViewModel @Inject constructor(
                     _responseRoute.value = route
                 }
             }.collect()
+        }
+    }
+
+    fun addHistory(history: History){
+        viewModelScope.launch {
+            addHistoryUseCase.invoke(history)
+        }
+    }
+
+    fun getHistory(search:String?){
+        getHistoryUseCase.invoke(search).onEach {
+            _responseHistory.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun deleteHistoryBayId(id:Int){
+        viewModelScope.launch {
+            deleteHistoryBayIdUseCase.invoke(id)
         }
     }
 }

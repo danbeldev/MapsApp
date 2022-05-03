@@ -2,7 +2,9 @@ package com.example.feature_map
 
 import android.Manifest
 import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +28,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.airbnb.lottie.compose.*
+import com.example.core_database_domain.model.History
 import com.example.core_network_domain.common.Response
 import com.example.core_network_domain.entities.infoMap.InfoMarker
 import com.example.core_network_domain.entities.infoMap.SearchResult
@@ -33,6 +36,7 @@ import com.example.core_network_domain.entities.route.Route
 import com.example.core_utils.navigation.WeatherNavScreen
 import com.example.core_utils.style_map.retro
 import com.example.feature_map.common.getGPS
+import com.example.feature_map.state.FrontLayerContentState
 import com.example.feature_map.state.SearchState
 import com.example.feature_map.view.MarkerClickDialogView
 import com.example.feature_map.view.TransportRouteDialogView
@@ -47,6 +51,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
+@ExperimentalFoundationApi
 @SuppressLint("CoroutineCreationDuringComposition")
 @ExperimentalPermissionsApi
 @ExperimentalMaterialApi
@@ -62,6 +67,7 @@ fun MapScreen(
     var route:Route? by remember { mutableStateOf(null) }
     var searchResults:Response<List<SearchResult>> by
         remember { mutableStateOf(Response.Loading()) }
+    var history by remember { mutableStateOf(listOf<History>()) }
 
     val markerClickDialog = remember { mutableStateOf(false) }
     val transportDialog = remember { mutableStateOf(false) }
@@ -77,6 +83,8 @@ fun MapScreen(
 
     var expandedDropdownMenuSearch by remember { mutableStateOf(false) }
     var searchState by remember { mutableStateOf(SearchState.CITY) }
+    var frontLayerContentState by remember { mutableStateOf(FrontLayerContentState.SEARCH_MAP) }
+    var expandedDropdownMenuFrontLayerContentState by remember { mutableStateOf(false) }
 
     val transport = remember { mutableStateOf("driving-car") }
 
@@ -123,19 +131,34 @@ fun MapScreen(
         }
     }
 
+    lifecycleScope.launch {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+            mapViewModel.responseHistory.onEach {
+                history = it
+            }.collect()
+        }
+    }
+
     LaunchedEffect(key1 = Unit, block = {
         permission.launchPermissionRequest()
     })
 
-    LaunchedEffect(key1 = search,key2 = searchState ,block = {
-        if (search.isNotEmpty()){
-            mapViewModel.getSearch(
-                city = if (searchState == SearchState.CITY) search else "",
-                country = if (searchState == SearchState.COUNTRY) search else "",
-                county = if (searchState == SearchState.COUNTY) search else "",
-                postalcode = if (searchState == SearchState.POSTAL_CODE) search else "",
-                street = if (searchState == SearchState.STREET) search else ""
-            )
+    LaunchedEffect(key1 = search,key2 = searchState, key3 = frontLayerContentState, block = {
+        when(frontLayerContentState){
+            FrontLayerContentState.SEARCH_MAP -> {
+                if (search.isNotEmpty()){
+                    mapViewModel.getSearch(
+                        city = if (searchState == SearchState.CITY) search else "",
+                        country = if (searchState == SearchState.COUNTRY) search else "",
+                        county = if (searchState == SearchState.COUNTY) search else "",
+                        postalcode = if (searchState == SearchState.POSTAL_CODE) search else "",
+                        street = if (searchState == SearchState.STREET) search else ""
+                    )
+                }
+            }
+            FrontLayerContentState.HISTORY -> {
+                mapViewModel.getHistory(search)
+            }
         }
     })
 
@@ -147,11 +170,22 @@ fun MapScreen(
 
     LaunchedEffect(key1 = transport.value,key2 = searchResult, block = {
         if (transport.value.isNotEmpty()){
-            mapViewModel.getRouteUseCase(
-                profile = transport.value,
-                start = "${getGPS(context).longitude},${getGPS(context).latitude}",
-                end = "${searchResult?.lon},${searchResult?.lat}"
-            )
+            searchResult?.let{
+                mapViewModel.getRouteUseCase(
+                    profile = transport.value,
+                    start = "${getGPS(context).longitude},${getGPS(context).latitude}",
+                    end = "${searchResult?.lon},${searchResult?.lat}"
+                )
+                mapViewModel.addHistory(
+                    History(
+                        id = 0,
+                        lat = searchResult!!.lat.toDouble(),
+                        lon = searchResult!!.lon.toDouble(),
+                        name = searchResult!!.display_name,
+                        transport = transport.value
+                    )
+                )
+            }
         }
     })
 
@@ -257,120 +291,185 @@ fun MapScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedTextField(
-                    modifier = Modifier.padding(5.dp),
-                    value = search,
-                    onValueChange = { search = it },
-                    trailingIcon = {
-                        TextButton(onClick = {
-                            expandedDropdownMenuSearch = true
-                        }) {
-                            Text(
-                                text = searchState.name.lowercase(),
-                                color = Color.Red
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = expandedDropdownMenuSearch,
-                            onDismissRequest = { expandedDropdownMenuSearch = false }
-                        ) {
-                            SearchState.values().forEach { state ->
-                                DropdownMenuItem(onClick = {
-                                    searchState = state
-                                    expandedDropdownMenuSearch = false
+                Row {
+                    OutlinedTextField(
+                        modifier = Modifier.padding(5.dp),
+                        value = search,
+                        onValueChange = { search = it },
+                        trailingIcon = {
+                            if (frontLayerContentState == FrontLayerContentState.SEARCH_MAP){
+                                TextButton(onClick = {
+                                    expandedDropdownMenuSearch = true
                                 }) {
                                     Text(
-                                        text = state.name.lowercase(),
-                                        color = if (searchState == state) Color.Red else Color.Black
+                                        text = searchState.name.lowercase(),
+                                        color = Color.Red
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = expandedDropdownMenuSearch,
+                                    onDismissRequest = { expandedDropdownMenuSearch = false }
+                                ) {
+                                    SearchState.values().forEach { state ->
+                                        DropdownMenuItem(onClick = {
+                                            searchState = state
+                                            expandedDropdownMenuSearch = false
+                                        }) {
+                                            Text(
+                                                text = state.name.lowercase(),
+                                                color = if (searchState == state) Color.Red else Color.Black
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Search
+                        ),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = Color.Black,
+                            disabledTextColor = Color.Black,
+                            backgroundColor = Color.White,
+                            cursorColor = Color.Black,
+                            focusedBorderColor = Color.Black,
+                            unfocusedBorderColor = Color.Black,
+                            errorCursorColor = Color.Black
+                        )
+                    )
+
+                    TextButton(onClick = { expandedDropdownMenuFrontLayerContentState = true }) {
+                        Text(
+                            text = frontLayerContentState.name.lowercase(),
+                            color = Color.Red
+                        )
+                        DropdownMenu(
+                            expanded = expandedDropdownMenuFrontLayerContentState,
+                            onDismissRequest = { expandedDropdownMenuFrontLayerContentState = false }
+                        ) {
+                            FrontLayerContentState.values().forEach { item ->
+                                DropdownMenuItem(onClick = {
+                                    frontLayerContentState = item
+                                    expandedDropdownMenuFrontLayerContentState = false
+                                }) {
+                                    Text(
+                                        text = item.name.lowercase(),
+                                        color = if(frontLayerContentState == item) Color.Red else Color.Black
                                     )
                                 }
                             }
                         }
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Search
-                    ),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        textColor = Color.Black,
-                        disabledTextColor = Color.Black,
-                        backgroundColor = Color.White,
-                        cursorColor = Color.Black,
-                        focusedBorderColor = Color.Black,
-                        unfocusedBorderColor = Color.Black,
-                        errorCursorColor = Color.Black
-                    )
-                )
-
-                when(searchResults){
-                    is Response.Error -> {
-                        LottieAnimation(
-                            modifier = Modifier.fillMaxSize(),
-                            composition = animationError.value,
-                            progress = progressAnimationError.progress
-                        )
                     }
-                    is Response.Loading -> {
-                        LottieAnimation(
-                            modifier = Modifier.fillMaxSize(),
-                            composition = animationLoading.value,
-                            progress = progressAnimationLoading.progress
-                        )
-                    }
-                    is Response.Success -> {
-                        if (searchResults.data!!.isEmpty()){
-                            LottieAnimation(
-                                modifier = Modifier.fillMaxSize(),
-                                composition = animationNullable.value,
-                                progress = progressAnimationNullable.progress
-                            )
-                        }else{
-                            LazyColumn(content = {
-                                items(searchResults.data!!){ item ->
+                }
 
-                                    var infoMarker by remember { mutableStateOf(listOf<InfoMarker>()) }
+                when(frontLayerContentState){
+                    FrontLayerContentState.SEARCH_MAP -> {
+                        when(searchResults){
+                            is Response.Error -> {
+                                LottieAnimation(
+                                    modifier = Modifier.fillMaxSize(),
+                                    composition = animationError.value,
+                                    progress = progressAnimationError.progress
+                                )
+                            }
+                            is Response.Loading -> {
+                                LottieAnimation(
+                                    modifier = Modifier.fillMaxSize(),
+                                    composition = animationLoading.value,
+                                    progress = progressAnimationLoading.progress
+                                )
+                            }
+                            is Response.Success -> {
+                                if (searchResults.data!!.isEmpty()){
+                                    LottieAnimation(
+                                        modifier = Modifier.fillMaxSize(),
+                                        composition = animationNullable.value,
+                                        progress = progressAnimationNullable.progress
+                                    )
+                                }else{
+                                    LazyColumn(content = {
+                                        items(searchResults.data!!){ item ->
 
-                                    lifecycleScope.launch {
-                                        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
-                                            mapViewModel.gerInfoMarker(
-                                                osmIds = item.osm_id
-                                            ).onEach {
-                                                infoMarker = it
-                                            }.collect()
-                                        }
-                                    }
+                                            var infoMarker by remember { mutableStateOf(listOf<InfoMarker>()) }
 
-                                    Column(
-                                        modifier = Modifier.pointerInput(Unit){
-                                            detectTapGestures(onTap = {
-                                                mapViewModel.getReverse(
-                                                    lat = item.lat,
-                                                    lon = item.lon
-                                                )
-                                            })
-                                        }
-                                    ) {
-                                        Text(
-                                            text = item.display_name,
-                                            modifier = Modifier
-                                                .padding(5.dp)
-                                        )
-
-                                        LazyRow(content = {
-                                            items(infoMarker){ item ->
-                                                item.extratags.image?.let {
-                                                    Image(
-                                                        painter = rememberImagePainter(data = item.extratags.image),
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(150.dp)
-                                                    )
+                                            lifecycleScope.launch {
+                                                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+                                                    mapViewModel.gerInfoMarker(
+                                                        osmIds = item.osm_id
+                                                    ).onEach {
+                                                        infoMarker = it
+                                                    }.collect()
                                                 }
                                             }
-                                        })
-                                        Divider()
-                                    }
+
+                                            Column(
+                                                modifier = Modifier.pointerInput(Unit){
+                                                    detectTapGestures(onTap = {
+                                                        mapViewModel.getReverse(
+                                                            lat = item.lat,
+                                                            lon = item.lon
+                                                        )
+                                                    })
+                                                }
+                                            ) {
+                                                Text(
+                                                    text = item.display_name,
+                                                    modifier = Modifier
+                                                        .padding(5.dp)
+                                                )
+
+                                                LazyRow(content = {
+                                                    items(infoMarker){ item ->
+                                                        item.extratags.image?.let {
+                                                            Image(
+                                                                painter = rememberImagePainter(data = item.extratags.image),
+                                                                contentDescription = null,
+                                                                modifier = Modifier.size(150.dp)
+                                                            )
+                                                        }
+                                                    }
+                                                })
+                                                Divider()
+                                            }
+                                        }
+                                    })
                                 }
-                            })
+                            }
                         }
+                    }
+                    FrontLayerContentState.HISTORY -> {
+                        LazyColumn(content = {
+                            items(history){ item ->
+                                Column(
+                                    modifier = Modifier.combinedClickable(
+                                        onClick = {
+                                            markerClickDialog.value = true
+                                            searchResult = SearchResult(
+                                                lat = item.lat.toString(),
+                                                lon = item.lon.toString(),
+                                                display_name = item.name
+                                            )
+                                        },
+                                        onLongClick = {
+                                            mapViewModel.deleteHistoryBayId(item.id)
+                                        }
+                                    )
+                                ) {
+                                    Text(
+                                        text = item.name,
+                                        modifier = Modifier
+                                            .padding(5.dp)
+                                    )
+
+                                    Text(
+                                        text = item.transport,
+                                        modifier = Modifier
+                                            .padding(5.dp)
+                                    )
+                                    Divider()
+                                }
+                            }
+                        })
                     }
                 }
             }

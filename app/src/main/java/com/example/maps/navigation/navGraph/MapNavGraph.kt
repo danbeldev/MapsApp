@@ -1,5 +1,6 @@
 package com.example.maps.navigation.navGraph
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -10,7 +11,10 @@ import com.example.core_utils.navigation.MapNavScreen
 import com.example.feature_map.MapScreen
 import com.example.maps.di.AppComponent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
+@ExperimentalFoundationApi
 @ExperimentalPermissionsApi
 @ExperimentalMaterialApi
 fun NavGraphBuilder.mapNavGraph(

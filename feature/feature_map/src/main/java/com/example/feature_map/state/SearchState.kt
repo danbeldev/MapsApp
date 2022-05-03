@@ -1,6 +1,6 @@
 package com.example.feature_map.state
 
-enum class SearchState {
+internal enum class SearchState {
     CITY,
     COUNTRY,
     COUNTY,

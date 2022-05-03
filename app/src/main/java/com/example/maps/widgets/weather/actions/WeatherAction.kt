@@ -1,6 +1,7 @@
 package com.example.maps.widgets.weather.actions
 
 import android.content.Context
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
@@ -17,12 +18,15 @@ import com.example.maps.widgets.weather.common.getGPS
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalFoundationApi
 @ExperimentalPermissionsApi
 @ExperimentalMaterialApi
 @ExperimentalSerializationApi
 class WeatherAction:ActionCallback {
 
-    private val appComponent = DaggerAppComponent.create()
+    private val appComponent = DaggerAppComponent
+        .builder()
+        .build()
 
     private val getWeatherUseCase = appComponent.getWeatherUseCase()
 

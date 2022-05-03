@@ -1,5 +1,6 @@
 package com.example.maps.navigation.host
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -10,7 +11,10 @@ import com.example.maps.navigation.navGraph.mapNavGraph
 import com.example.maps.navigation.navGraph.startNavGraph
 import com.example.maps.navigation.navGraph.weatherNavGraph
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
+@ExperimentalFoundationApi
 @ExperimentalMaterialApi
 @ExperimentalPermissionsApi
 @Composable

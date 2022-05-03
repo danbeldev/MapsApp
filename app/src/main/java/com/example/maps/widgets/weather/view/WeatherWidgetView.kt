@@ -1,6 +1,7 @@
 package com.example.maps.widgets.weather.view
 
 import android.content.Intent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -22,6 +23,7 @@ import com.example.maps.widgets.weather.actions.WeatherAction
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalFoundationApi
 @ExperimentalPermissionsApi
 @ExperimentalMaterialApi
 @ExperimentalSerializationApi

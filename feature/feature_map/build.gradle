@@ -38,6 +38,7 @@ android {
 
 dependencies {
 
+    implementation project(":core:core_database_domain")
     implementation project(":core:core_network_domain")
     implementation project(":core:core-utils")
 

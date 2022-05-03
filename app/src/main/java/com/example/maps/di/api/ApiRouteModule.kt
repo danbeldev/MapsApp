@@ -1,4 +1,4 @@
-package com.example.maps.di
+package com.example.maps.di.api
 
 import com.example.core_network_data.api.RouteApi
 import com.example.core_network_data.repositoryImpl.RouteRepositoryImpl

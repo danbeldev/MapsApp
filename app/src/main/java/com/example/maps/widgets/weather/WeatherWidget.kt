@@ -1,5 +1,6 @@
 package com.example.maps.widgets.weather
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -9,6 +10,7 @@ import com.example.maps.widgets.weather.view.WeatherWidgetView
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalFoundationApi
 @ExperimentalMaterialApi
 @ExperimentalPermissionsApi
 @ExperimentalSerializationApi

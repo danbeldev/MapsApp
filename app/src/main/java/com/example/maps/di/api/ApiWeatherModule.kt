@@ -1,4 +1,4 @@
-package com.example.maps.di
+package com.example.maps.di.api
 
 import com.example.core_network_data.api.WeatherApi
 import com.example.core_network_data.repositoryImpl.WeatherRepositoryImpl
@@ -13,6 +13,7 @@ import okhttp3.MediaType
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
+@ExperimentalSerializationApi
 @Module
 class ApiWeatherModule {
 

@@ -13,11 +13,14 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/core/core-utils" />
+            <option value="$PROJECT_DIR$/core/core_database_data" />
+            <option value="$PROJECT_DIR$/core/core_database_domain" />
             <option value="$PROJECT_DIR$/core/core_network_data" />
             <option value="$PROJECT_DIR$/core/core_network_domain" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/feature_intro_start" />
             <option value="$PROJECT_DIR$/feature/feature_map" />
+            <option value="$PROJECT_DIR$/feature/feature_settings" />
             <option value="$PROJECT_DIR$/feature/feature_weather" />
           </set>
         </option>
