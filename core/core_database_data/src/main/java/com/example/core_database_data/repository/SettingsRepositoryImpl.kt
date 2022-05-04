@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import com.example.core_database_data.proto.SettingsSerializer
 import com.example.core_database_domain.model.Setting
+import com.example.core_database_domain.model.Theme
 import com.example.core_database_domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -25,7 +26,7 @@ class SettingsRepositoryImpl @Inject constructor(
                 }
             }.map {
                 Setting(
-                    theme = enumValueOf(it.theme)
+                    theme = if (it.theme.isNotEmpty()) enumValueOf(it.theme) else Theme.RETRO
                 )
             }
 

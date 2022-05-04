@@ -9,6 +9,7 @@ import androidx.navigation.navigation
 import com.example.core_utils.navigation.MAP_ROUE
 import com.example.core_utils.navigation.MapNavScreen
 import com.example.feature_map.MapScreen
+import com.example.feature_settings.SettingsScreen
 import com.example.maps.di.AppComponent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -29,6 +30,12 @@ fun NavGraphBuilder.mapNavGraph(
                 MapScreen(
                     navController = navController,
                     mapViewModel = appComponent.mapViewModel()
+                )
+            }
+            composable(MapNavScreen.Setting.route){
+                SettingsScreen(
+                    navController = navController,
+                    settingViewModel = appComponent.settingViewModel()
                 )
             }
         }

@@ -24,13 +24,12 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @ExperimentalSerializationApi
 class WeatherAction:ActionCallback {
 
-    private val appComponent = DaggerAppComponent
-        .builder()
-        .build()
-
-    private val getWeatherUseCase = appComponent.getWeatherUseCase()
-
     override suspend fun onRun(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        val appComponent = DaggerAppComponent
+            .builder()
+            .context(context)
+            .build()
+        val getWeatherUseCase = appComponent.getWeatherUseCase()
         updateAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId){
             it.toMutablePreferences()
                 .apply {

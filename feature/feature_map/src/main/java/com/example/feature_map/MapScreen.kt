@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +22,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -29,12 +32,15 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.airbnb.lottie.compose.*
 import com.example.core_database_domain.model.History
+import com.example.core_database_domain.model.HomeUser
+import com.example.core_database_domain.model.Setting
+import com.example.core_database_domain.model.WorkUser
 import com.example.core_network_domain.common.Response
 import com.example.core_network_domain.entities.infoMap.InfoMarker
 import com.example.core_network_domain.entities.infoMap.SearchResult
 import com.example.core_network_domain.entities.route.Route
+import com.example.core_utils.navigation.MapNavScreen
 import com.example.core_utils.navigation.WeatherNavScreen
-import com.example.core_utils.style_map.retro
 import com.example.feature_map.common.getGPS
 import com.example.feature_map.state.FrontLayerContentState
 import com.example.feature_map.state.SearchState
@@ -43,9 +49,7 @@ import com.example.feature_map.view.TransportRouteDialogView
 import com.example.feature_map.viewModel.MapViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -63,11 +67,16 @@ fun MapScreen(
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val lifecycleScope = LocalLifecycleOwner.current.lifecycleScope
+
     var search by remember { mutableStateOf("") }
     var route:Route? by remember { mutableStateOf(null) }
     var searchResults:Response<List<SearchResult>> by
         remember { mutableStateOf(Response.Loading()) }
     var history by remember { mutableStateOf(listOf<History>()) }
+    var setting by remember { mutableStateOf(Setting()) }
+
+    var homeUser by remember { mutableStateOf(HomeUser()) }
+    var workUser by remember { mutableStateOf(WorkUser()) }
 
     val markerClickDialog = remember { mutableStateOf(false) }
     val transportDialog = remember { mutableStateOf(false) }
@@ -139,6 +148,30 @@ fun MapScreen(
         }
     }
 
+    lifecycleScope.launch {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+            mapViewModel.responseSetting.onEach {
+                setting = it
+            }.collect()
+        }
+    }
+
+    lifecycleScope.launch {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+            mapViewModel.responseHomeUser.onEach {
+                homeUser = it
+            }.collect()
+        }
+    }
+
+    lifecycleScope.launch {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+            mapViewModel.responseWorkUser.onEach {
+                workUser = it
+            }.collect()
+        }
+    }
+
     LaunchedEffect(key1 = Unit, block = {
         permission.launchPermissionRequest()
     })
@@ -159,6 +192,8 @@ fun MapScreen(
             FrontLayerContentState.HISTORY -> {
                 mapViewModel.getHistory(search)
             }
+            FrontLayerContentState.ROUTE -> Unit
+            FrontLayerContentState.FAVORITE -> Unit
         }
     })
 
@@ -185,6 +220,8 @@ fun MapScreen(
                         transport = transport.value
                     )
                 )
+                frontLayerContentState = FrontLayerContentState.ROUTE
+                backdropState.conceal()
             }
         }
     })
@@ -201,14 +238,13 @@ fun MapScreen(
                     cameraPositionState = cameraPosition,
                     properties = MapProperties(
                         isMyLocationEnabled = permission.hasPermission,
-                        mapStyleOptions = MapStyleOptions(retro)
+                        mapStyleOptions = MapStyleOptions(setting.theme.theme)
                     ),
                     onMapClick = {
                         mapViewModel.getReverse(
                             lat = it.latitude.toString(),
                             lon = it.longitude.toString()
                         )
-
                     },
                     content = {
                         searchResults.data?.let { result ->
@@ -227,10 +263,44 @@ fun MapScreen(
                             }
                         }
 
-                        searchResult?.let {
+                        if(homeUser.homeName.isNotEmpty()){
+                            Marker(
+                                title = homeUser.homeName,
+                                position = LatLng(
+                                    homeUser.homeLat,
+                                    homeUser.homeLon
+                                ),
+                                onInfoWindowClick = {
+                                    mapViewModel.getReverse(
+                                        lat = it.position.latitude.toString(),
+                                        lon = it.position.longitude.toString()
+                                    )
+                                    markerClickDialog.value = true
+                                }
+                            )
+                        }
 
+                        if(workUser.workName.isNotEmpty()){
+                            Marker(
+                                title = workUser.workName,
+                                position = LatLng(
+                                    workUser.workLat,
+                                    workUser.workLon
+                                ),
+                                onInfoWindowClick = {
+                                    mapViewModel.getReverse(
+                                        lat = it.position.latitude.toString(),
+                                        lon = it.position.longitude.toString()
+                                    )
+                                    markerClickDialog.value = true
+                                }
+                            )
+                        }
+
+                        searchResult?.let {
                             Marker(
                                 title = searchResult!!.display_name,
+                                draggable = true,
                                 position = LatLng(
                                     searchResult!!.lat.toDouble(), searchResult!!.lon.toDouble()
                                 ),
@@ -256,17 +326,29 @@ fun MapScreen(
                         }
                     }
                 )
-                IconButton(
-                    modifier = Modifier.padding(10.dp),
-                    onClick = {
-                        navController.navigate(WeatherNavScreen.WeatherInfo.route)
+
+                Row {
+                    IconButton(
+                        onClick = { navController.navigate(MapNavScreen.Setting.route) }
+                    ) {
+                        Image(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
                     }
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.weather),
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp)
-                    )
+
+                    IconButton(
+                        onClick = {
+                            navController.navigate(WeatherNavScreen.WeatherInfo.route)
+                        }
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.weather),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
                 }
             }
 
@@ -274,6 +356,7 @@ fun MapScreen(
         frontLayerContent = {
 
             MarkerClickDialogView(
+                mapViewModel = mapViewModel,
                 navController = navController,
                 value = markerClickDialog,
                 transportDialog = transportDialog,
@@ -292,51 +375,57 @@ fun MapScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row {
-                    OutlinedTextField(
-                        modifier = Modifier.padding(5.dp),
-                        value = search,
-                        onValueChange = { search = it },
-                        trailingIcon = {
-                            if (frontLayerContentState == FrontLayerContentState.SEARCH_MAP){
-                                TextButton(onClick = {
-                                    expandedDropdownMenuSearch = true
-                                }) {
-                                    Text(
-                                        text = searchState.name.lowercase(),
-                                        color = Color.Red
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = expandedDropdownMenuSearch,
-                                    onDismissRequest = { expandedDropdownMenuSearch = false }
-                                ) {
-                                    SearchState.values().forEach { state ->
-                                        DropdownMenuItem(onClick = {
-                                            searchState = state
-                                            expandedDropdownMenuSearch = false
-                                        }) {
-                                            Text(
-                                                text = state.name.lowercase(),
-                                                color = if (searchState == state) Color.Red else Color.Black
-                                            )
+                    if (
+                        frontLayerContentState == FrontLayerContentState.SEARCH_MAP ||
+                        frontLayerContentState == FrontLayerContentState.HISTORY
+                    ){
+                        OutlinedTextField(
+                            modifier = Modifier.padding(5.dp),
+                            value = search,
+                            onValueChange = { search = it },
+                            trailingIcon = {
+                                if (frontLayerContentState == FrontLayerContentState.SEARCH_MAP){
+                                    TextButton(onClick = {
+                                        expandedDropdownMenuSearch = true
+                                    }) {
+                                        Text(
+                                            text = searchState.name.lowercase(),
+                                            color = Color.Red
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = expandedDropdownMenuSearch,
+                                        onDismissRequest = { expandedDropdownMenuSearch = false }
+                                    ) {
+                                        SearchState.values().forEach { state ->
+                                            DropdownMenuItem(onClick = {
+                                                searchState = state
+                                                expandedDropdownMenuSearch = false
+                                            }) {
+                                                Text(
+                                                    text = state.name.lowercase(),
+                                                    color = if (searchState == state) Color.Red
+                                                    else Color.Black
+                                                )
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Search
-                        ),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.Black,
-                            disabledTextColor = Color.Black,
-                            backgroundColor = Color.White,
-                            cursorColor = Color.Black,
-                            focusedBorderColor = Color.Black,
-                            unfocusedBorderColor = Color.Black,
-                            errorCursorColor = Color.Black
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Search
+                            ),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                textColor = Color.Black,
+                                disabledTextColor = Color.Black,
+                                backgroundColor = Color.White,
+                                cursorColor = Color.Black,
+                                focusedBorderColor = Color.Black,
+                                unfocusedBorderColor = Color.Black,
+                                errorCursorColor = Color.Black
+                            )
                         )
-                    )
+                    }
 
                     TextButton(onClick = { expandedDropdownMenuFrontLayerContentState = true }) {
                         Text(
@@ -422,7 +511,9 @@ fun MapScreen(
                                                     items(infoMarker){ item ->
                                                         item.extratags.image?.let {
                                                             Image(
-                                                                painter = rememberImagePainter(data = item.extratags.image),
+                                                                painter = rememberImagePainter(
+                                                                    data = item.extratags.image
+                                                                ),
                                                                 contentDescription = null,
                                                                 modifier = Modifier.size(150.dp)
                                                             )
@@ -466,6 +557,120 @@ fun MapScreen(
                                         modifier = Modifier
                                             .padding(5.dp)
                                     )
+                                    Divider()
+                                }
+                            }
+                        })
+                    }
+                    FrontLayerContentState.ROUTE -> {
+                        LazyColumn(content = {
+                            route?.let{
+                                route!!.features.forEach { feature ->
+                                    feature.properties.segments.forEach { segment ->
+                                        item{
+                                            Column {
+                                                Text(
+                                                    text = "Distance ${segment.distance} Meters",
+                                                    modifier = Modifier.padding(5.dp)
+                                                )
+
+                                                Divider()
+                                            }
+                                        }
+
+                                        items(segment.steps){ step ->
+                                            Column {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+                                                    Column {
+                                                        Text(
+                                                            text = step.name,
+                                                            modifier = Modifier.padding(5.dp)
+                                                        )
+
+                                                        Text(
+                                                            text = step.instruction,
+                                                            modifier = Modifier.padding(5.dp)
+                                                        )
+                                                    }
+
+                                                    Column {
+                                                        step.way_points.forEach { point ->
+                                                            Text(
+                                                                text = point.toString(),
+                                                                modifier = Modifier.padding(5.dp)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                                Divider()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                    }
+                    FrontLayerContentState.FAVORITE -> {
+                        LazyColumn(content = {
+                            item {
+                                Column {
+                                    Column(
+                                        modifier = Modifier.pointerInput(Unit){
+                                            detectTapGestures(
+                                                onTap = {
+                                                    if (homeUser.homeName.isNotEmpty()){
+                                                        markerClickDialog.value = true
+                                                        searchResult = SearchResult(
+                                                            lat = homeUser.homeLat.toString(),
+                                                            lon = homeUser.homeLon.toString(),
+                                                            display_name = homeUser.homeName
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    ) {
+                                        Text(
+                                            text = "Home",
+                                            modifier = Modifier.padding(5.dp),
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.Red
+                                        )
+                                        Text(
+                                            text = homeUser.homeName,
+                                            modifier = Modifier.padding(5.dp)
+                                        )
+                                    }
+                                    Column(
+                                        modifier = Modifier.pointerInput(Unit){
+                                            detectTapGestures(
+                                                onTap = {
+                                                    if (workUser.workName.isNotEmpty()){
+                                                        markerClickDialog.value = true
+                                                        searchResult = SearchResult(
+                                                            lat = workUser.workLat.toString(),
+                                                            lon = workUser.workLon.toString(),
+                                                            display_name = workUser.workName
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    ) {
+                                        Text(
+                                            text = "Work",
+                                            modifier = Modifier.padding(5.dp),
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.Red
+                                        )
+                                        Text(
+                                            text = workUser.workName,
+                                            modifier = Modifier.padding(5.dp)
+                                        )
+                                    }
                                     Divider()
                                 }
                             }

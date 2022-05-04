@@ -3,12 +3,14 @@ package com.example.maps.di
 import android.content.Context
 import com.example.core_network_domain.useCase.weather.GetWeatherUseCase
 import com.example.feature_map.viewModel.MapViewModel
+import com.example.feature_settings.viewModel.SettingViewModel
 import com.example.feature_weather.viewModel.WeatherViewModel
 import com.example.maps.di.api.ApiInfoMapModule
 import com.example.maps.di.api.ApiRouteModule
 import com.example.maps.di.api.ApiWeatherModule
 import com.example.maps.di.database.UserDatabaseModule
 import com.example.maps.di.proto.SettingsProtoModule
+import com.example.maps.di.proto.UserProtoModule
 import dagger.BindsInstance
 import dagger.Component
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -20,13 +22,15 @@ import javax.inject.Singleton
     ApiWeatherModule::class,
     ApiRouteModule::class,
     UserDatabaseModule::class,
-    SettingsProtoModule::class
+    SettingsProtoModule::class,
+    UserProtoModule::class
 ])]
 interface AppComponent{
 
     fun mapViewModel():MapViewModel
 
-    @ExperimentalSerializationApi
+    fun settingViewModel():SettingViewModel
+
     fun weatherViewModel():WeatherViewModel
 
     fun getWeatherUseCase(): GetWeatherUseCase

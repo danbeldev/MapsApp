@@ -51,6 +51,7 @@ dependencies {
 
     implementation project(":feature:feature_map")
     implementation project(":feature:feature_weather")
+    implementation project(":feature:feature_settings")
     implementation project(":feature:feature_intro_start")
     implementation project(":core:core-utils")
     implementation project(":core:core_network_domain")

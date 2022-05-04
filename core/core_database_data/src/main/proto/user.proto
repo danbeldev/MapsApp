@@ -1,0 +1,15 @@
+syntax = "proto3";
+option java_package = "com.example.core_database_data";
+option java_multiple_files = true;
+
+message HomeUser{
+  string HomeName = 1;
+  double HomeLat = 2;
+  double HomeLon = 3;
+}
+
+message WorkUser{
+  string WorkName = 1;
+  double WorkLat = 2;
+  double WorkLon = 3;
+}

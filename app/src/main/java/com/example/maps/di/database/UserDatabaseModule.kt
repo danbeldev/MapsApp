@@ -3,7 +3,9 @@ package com.example.maps.di.database
 import android.content.Context
 import androidx.room.Room
 import com.example.core_database_data.database.UserDatabase
+import com.example.core_database_data.repository.FavoriteMarkerMapRepositoryImpl
 import com.example.core_database_data.repository.HistoryRepositoryImpl
+import com.example.core_database_domain.repository.FavoriteMarkerMapRepository
 import com.example.core_database_domain.repository.HistoryRepository
 import dagger.Module
 import dagger.Provides
@@ -17,6 +19,13 @@ class UserDatabaseModule {
         userDatabase: UserDatabase
     ):HistoryRepository = HistoryRepositoryImpl(
         historyDao = userDatabase.historyDao()
+    )
+
+    @[Provides Singleton]
+    fun providerFavoriteMarkerMapRepository(
+        userDatabase: UserDatabase
+    ): FavoriteMarkerMapRepository = FavoriteMarkerMapRepositoryImpl(
+        favoriteMarkerMapDao = userDatabase.favoriteMarkerMapDao()
     )
 
     @[Provides Singleton]

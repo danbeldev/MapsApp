@@ -1,6 +1,7 @@
 package com.example.feature_map.view
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
@@ -15,10 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.core_database_domain.model.HomeUser
+import com.example.core_database_domain.model.WorkUser
 import com.example.core_utils.navigation.WeatherNavScreen
+import com.example.feature_map.viewModel.MapViewModel
 
 @Composable
 internal fun MarkerClickDialogView(
+    mapViewModel:MapViewModel,
     value:MutableState<Boolean>,
     transportDialog:MutableState<Boolean>,
     title:String,
@@ -54,9 +59,9 @@ internal fun MarkerClickDialogView(
                     OutlinedButton(
                         modifier = Modifier.padding(5.dp),
                         onClick = {
-                                  navController.navigate(WeatherNavScreen.WeatherInfo.data(
-                                      lat, lon
-                                  ))
+                            navController.navigate(WeatherNavScreen.WeatherInfo.data(
+                                lat, lon
+                            ))
                         },
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color.Black
@@ -75,6 +80,46 @@ internal fun MarkerClickDialogView(
                         )
                     ) {
                         Text(text = "Построить маршрут")
+                    }
+
+                    Row {
+                        OutlinedButton(
+                            modifier = Modifier.padding(5.dp),
+                            onClick = {
+                                mapViewModel.updateHomeUser(
+                                    HomeUser(
+                                        homeName = title,
+                                        homeLon = lon.toDouble(),
+                                        homeLat = lat.toDouble()
+                                    )
+                                )
+                                value.value = false
+                            },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.Black
+                            )
+                        ) {
+                            Text(text = "Мой дом")
+                        }
+
+                        OutlinedButton(
+                            modifier = Modifier.padding(5.dp),
+                            onClick = {
+                                mapViewModel.updateWorkUser(
+                                    WorkUser(
+                                        workName = title,
+                                        workLat = lat.toDouble(),
+                                        workLon = lon.toDouble()
+                                    )
+                                )
+                                value.value = false
+                            },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.Black
+                            )
+                        ) {
+                            Text(text = "Моя работа")
+                        }
                     }
                 }
             }
