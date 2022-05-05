@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.core_database_domain.model.FavoriteMarkerMap
 import com.example.core_database_domain.model.HomeUser
 import com.example.core_database_domain.model.WorkUser
 import com.example.core_utils.navigation.WeatherNavScreen
@@ -120,6 +121,25 @@ internal fun MarkerClickDialogView(
                         ) {
                             Text(text = "Моя работа")
                         }
+                    }
+                    OutlinedButton(
+                        modifier = Modifier.padding(5.dp),
+                        onClick = {
+                            mapViewModel.addFavoriteMarkerMap(
+                                FavoriteMarkerMap(
+                                    id = 0,
+                                    title = title,
+                                    lat = lat.toDouble(),
+                                    lon = lon.toDouble()
+                                )
+                            )
+                            value.value = false
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.Black
+                        )
+                    ) {
+                        Text(text = "Add favorite")
                     }
                 }
             }

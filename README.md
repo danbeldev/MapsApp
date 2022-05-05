@@ -30,6 +30,11 @@
 [![setting_screen]][setting_screen]
 <br>
 
+## Widgets
+
+[![weather_widget]][weather_widget]
+<br>
+
 ## Technology stack
 - Kotlin
 - Multi module
@@ -68,3 +73,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 [route_info_maps_screen]: dev_files/screens/route_info_maps_screen.jpg
 [weather_screen]: dev_files/screens/weather_screen.jpg
 [setting_screen]: dev_files/screens/setting_screen.jpg
+[weather_widget]: dev_files/screens/weather_widget.jpg

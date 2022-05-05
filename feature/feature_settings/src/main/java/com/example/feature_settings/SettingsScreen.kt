@@ -116,6 +116,13 @@ fun SettingsScreen(
             ) {
                 Text(text = "Delete History")
             }
+
+            OutlinedButton(
+                modifier = Modifier.padding(5.dp),
+                onClick = { settingViewModel.deleteFavoriteMarkerMap() }
+            ) {
+                Text(text = "Delete Favorites")
+            }
         }
     }
 }

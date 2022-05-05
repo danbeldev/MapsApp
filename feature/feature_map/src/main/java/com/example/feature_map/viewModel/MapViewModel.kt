@@ -3,9 +3,13 @@ package com.example.feature_map.viewModel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core_database_domain.model.FavoriteMarkerMap
 import com.example.core_database_domain.model.History
 import com.example.core_database_domain.model.HomeUser
 import com.example.core_database_domain.model.WorkUser
+import com.example.core_database_domain.useCase.favoriteMarkerMap.AddFavoriteMarkerMapUseCase
+import com.example.core_database_domain.useCase.favoriteMarkerMap.DeleteFavoriteMarkerMapByIdUseCase
+import com.example.core_database_domain.useCase.favoriteMarkerMap.GetFavoriteMarkerMapUseCase
 import com.example.core_database_domain.useCase.history.AddHistoryUseCase
 import com.example.core_database_domain.useCase.history.DeleteHistoryBayIdUseCase
 import com.example.core_database_domain.useCase.history.GetHistoryUseCase
@@ -36,6 +40,9 @@ class MapViewModel @Inject constructor(
     private val deleteHistoryBayIdUseCase: DeleteHistoryBayIdUseCase,
     private val updateHomeUserUseCase: UpdateHomeUserUseCase,
     private val updateWorkUserUseCase: UpdateWorkUserUseCase,
+    private val addFavoriteMarkerMapUseCase: AddFavoriteMarkerMapUseCase,
+    private val getFavoriteMarkerMapUseCase: GetFavoriteMarkerMapUseCase,
+    private val deleteFavoriteMarkerMapByIdUseCase: DeleteFavoriteMarkerMapByIdUseCase,
     getHomeUserUseCase: GetHomeUserUseCase,
     getWorkUserUseCase: GetWorkUserUseCase,
     getSettingUseCase: GetSettingUseCase
@@ -54,6 +61,9 @@ class MapViewModel @Inject constructor(
     private val _responseHistory:MutableStateFlow<List<History>> =
         MutableStateFlow(listOf())
     val responseHistory = _responseHistory.asStateFlow()
+
+    private val _responseFavoriteMarkerMap = MutableStateFlow(listOf<FavoriteMarkerMap>())
+    val responseFavoriteMarkerMap = _responseFavoriteMarkerMap.asStateFlow()
 
     val responseSetting = getSettingUseCase.invoke()
 
@@ -138,6 +148,24 @@ class MapViewModel @Inject constructor(
     fun updateWorkUser(workUser: WorkUser){
         viewModelScope.launch {
             updateWorkUserUseCase.invoke(workUser)
+        }
+    }
+
+    fun addFavoriteMarkerMap(favoriteMarkerMap: FavoriteMarkerMap){
+        viewModelScope.launch {
+            addFavoriteMarkerMapUseCase.invoke(favoriteMarkerMap)
+        }
+    }
+
+    fun getFavoriteMarkerMap(search:String?){
+        getFavoriteMarkerMapUseCase.invoke(search).onEach {
+            _responseFavoriteMarkerMap.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun deleteFavoriteMarkerMapById(id:Int){
+        viewModelScope.launch {
+            deleteFavoriteMarkerMapByIdUseCase.invoke(id = id)
         }
     }
 }

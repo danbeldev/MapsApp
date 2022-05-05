@@ -1,4 +1,4 @@
-package com.example.maps
+package com.example.maps.ui.activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

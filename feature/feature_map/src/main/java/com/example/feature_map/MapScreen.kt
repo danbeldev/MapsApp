@@ -31,10 +31,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.airbnb.lottie.compose.*
-import com.example.core_database_domain.model.History
-import com.example.core_database_domain.model.HomeUser
-import com.example.core_database_domain.model.Setting
-import com.example.core_database_domain.model.WorkUser
+import com.example.core_database_domain.model.*
 import com.example.core_network_domain.common.Response
 import com.example.core_network_domain.entities.infoMap.InfoMarker
 import com.example.core_network_domain.entities.infoMap.SearchResult
@@ -77,6 +74,7 @@ fun MapScreen(
 
     var homeUser by remember { mutableStateOf(HomeUser()) }
     var workUser by remember { mutableStateOf(WorkUser()) }
+    var favoriteMarkerMap by remember { mutableStateOf(listOf<FavoriteMarkerMap>()) }
 
     val markerClickDialog = remember { mutableStateOf(false) }
     val transportDialog = remember { mutableStateOf(false) }
@@ -172,6 +170,14 @@ fun MapScreen(
         }
     }
 
+    lifecycleScope.launch {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+            mapViewModel.responseFavoriteMarkerMap.onEach {
+                favoriteMarkerMap = it
+            }.collect()
+        }
+    }
+
     LaunchedEffect(key1 = Unit, block = {
         permission.launchPermissionRequest()
     })
@@ -193,7 +199,9 @@ fun MapScreen(
                 mapViewModel.getHistory(search)
             }
             FrontLayerContentState.ROUTE -> Unit
-            FrontLayerContentState.FAVORITE -> Unit
+            FrontLayerContentState.FAVORITE -> {
+                mapViewModel.getFavoriteMarkerMap(search)
+            }
         }
     })
 
@@ -247,6 +255,20 @@ fun MapScreen(
                         )
                     },
                     content = {
+                        favoriteMarkerMap.forEach { item ->
+                            Marker(
+                                position = LatLng(item.lat, item.lon),
+                                title = item.title,
+                                onInfoWindowClick = {
+                                    mapViewModel.getReverse(
+                                        lat = it.position.latitude.toString(),
+                                        lon = it.position.longitude.toString()
+                                    )
+                                    markerClickDialog.value = true
+                                }
+                            )
+                        }
+
                         searchResults.data?.let { result ->
                             result.forEach { markerData ->
                                 Marker(
@@ -377,7 +399,8 @@ fun MapScreen(
                 Row {
                     if (
                         frontLayerContentState == FrontLayerContentState.SEARCH_MAP ||
-                        frontLayerContentState == FrontLayerContentState.HISTORY
+                        frontLayerContentState == FrontLayerContentState.HISTORY ||
+                        frontLayerContentState == FrontLayerContentState.FAVORITE
                     ){
                         OutlinedTextField(
                             modifier = Modifier.padding(5.dp),
@@ -571,7 +594,9 @@ fun MapScreen(
                                             Column {
                                                 Text(
                                                     text = "Distance ${segment.distance} Meters",
-                                                    modifier = Modifier.padding(5.dp)
+                                                    modifier = Modifier.padding(5.dp),
+                                                    color = Color.Red,
+                                                    fontWeight = FontWeight.Bold
                                                 )
 
                                                 Divider()
@@ -671,6 +696,31 @@ fun MapScreen(
                                             modifier = Modifier.padding(5.dp)
                                         )
                                     }
+                                    Divider()
+                                }
+                            }
+                            items(favoriteMarkerMap){ item ->
+                                Column(
+                                    modifier = Modifier.combinedClickable(
+                                        onClick = {
+                                            markerClickDialog.value = true
+                                            searchResult = SearchResult(
+                                                lat = item.lat.toString(),
+                                                lon = item.lon.toString(),
+                                                display_name = item.title
+                                            )
+                                        },
+                                        onLongClick = {
+                                            mapViewModel.deleteFavoriteMarkerMapById(
+                                                id = item.id
+                                            )
+                                        }
+                                    )
+                                ) {
+                                    Text(
+                                        text = item.title,
+                                        modifier = Modifier.padding(5.dp)
+                                    )
                                     Divider()
                                 }
                             }

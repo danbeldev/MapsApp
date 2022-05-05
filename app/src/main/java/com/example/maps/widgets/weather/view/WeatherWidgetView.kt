@@ -14,7 +14,7 @@ import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.layout.*
 import androidx.glance.text.Text
-import com.example.maps.MainActivity
+import com.example.maps.ui.activity.MainActivity
 import com.example.maps.R
 import com.example.maps.widgets.weather.WeatherWidget.Companion.WEATHER_DATE_KEY
 import com.example.maps.widgets.weather.WeatherWidget.Companion.WEATHER_DESCRIPTION_KEY
