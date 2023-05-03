@@ -2,13 +2,13 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.7">
-      <module name="Maps.app" target="11" />
-      <module name="Maps.core.core_database_data" target="11" />
-      <module name="Maps.core.core_network_data" target="11" />
-      <module name="Maps.feature.feature_intro_start" target="11" />
-      <module name="Maps.feature.feature_map" target="11" />
-      <module name="Maps.feature.feature_settings" target="11" />
-      <module name="Maps.feature.feature_weather" target="11" />
+      <module name="Maps.app" target="17" />
+      <module name="Maps.core.core_database_data" target="17" />
+      <module name="Maps.core.core_network_data" target="17" />
+      <module name="Maps.feature.feature_intro_start" target="17" />
+      <module name="Maps.feature.feature_map" target="17" />
+      <module name="Maps.feature.feature_settings" target="17" />
+      <module name="Maps.feature.feature_weather" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

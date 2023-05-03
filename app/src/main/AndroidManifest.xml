@@ -1,27 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.maps">
+    package="com.afprojectmaps.maps">
 
     <uses-permission android:name="android.permission.INTERNET"
         tools:ignore="CoarseFineLocation" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
         tools:ignore="CoarseFineLocation" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <application
-        android:allowBackup="true"
+        android:name="com.afprojectmaps.maps.ui.activity.AppApplication"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Maps">
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBI7Q92hZqhLszNAc2i3OkwsjmHjUQx6wY"/>
 
         <receiver
-            android:name=".widgets.weather.WeatherWidgetReceiver"
+            android:name="com.afprojectmaps.maps.widgets.weather.WeatherWidgetReceiver"
             android:enabled="@bool/glance_appwidget_available"
             android:exported="false">
             <intent-filter>
@@ -33,7 +42,7 @@
         </receiver>
 
         <activity
-            android:name=".ui.activity.MainActivity"
+            android:name="com.afprojectmaps.maps.ui.activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Maps">
